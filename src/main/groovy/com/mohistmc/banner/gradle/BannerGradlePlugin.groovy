@@ -59,6 +59,11 @@ class BannerGradlePlugin implements Plugin<Project> {
                 if (!task.bukkitVersion) {
                     task.bukkitVersion = bannerExt.bukkitVersion
                 }
+
+                File oldJar = task.outJar
+                if (oldJar.exists()) {
+                    task.outJar.delete()
+                }
             }
             project.tasks.compileJava.dependsOn(remapSpigot)
         }
