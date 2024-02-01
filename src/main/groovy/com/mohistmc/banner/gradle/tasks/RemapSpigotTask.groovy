@@ -1,6 +1,6 @@
 package com.mohistmc.banner.gradle.tasks
 
-
+import net.md_5.specialsource.SpecialSource
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
@@ -8,6 +8,7 @@ import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 
+import java.nio.file.Files
 import java.nio.file.Path
 import java.util.jar.JarEntry
 import java.util.jar.JarFile
@@ -22,6 +23,8 @@ class RemapSpigotTask extends DefaultTask {
     private List<String> includes
     private List<String> excludes
     private String bukkitVersion
+    private File inSrg
+    private File inAt
 
     RemapSpigotTask() {
         includes = new ArrayList<>()
@@ -37,11 +40,23 @@ class RemapSpigotTask extends DefaultTask {
         excludes.add('org/bukkit/craftbukkit/libs/org/eclipse')
         excludes.add('org/bukkit/craftbukkit/libs/jline')
         excludes.add('org/bukkit/craftbukkit/Main')
+        File libDir = new File(project.rootDir, "/libs")
+        inSrg = new File(libDir, "banner-extra.srg")
+        inAt = new File(libDir, "bukkit.at")
     }
 
     @TaskAction
     void remap() {
-        copy(inJar.toPath(), outJar.toPath(), includes, excludes)
+        def tmp = Files.createTempFile("banner", "jar")
+        SpecialSource.main(new String[]{
+                '-i', inJar.canonicalPath,
+                '-o', tmp.toFile().canonicalPath,
+                '-m', inSrg.canonicalPath,
+                '--access-transformer', inAt.canonicalPath})
+        Path tmpSrg
+        copy(tmp, outJar.toPath(), includes, excludes)
+        Files.delete(tmp)
+        if (tmpSrg) Files.delete(tmpSrg)
     }
 
     private static void copy(Path inJar, Path outJar, List<String> includes, List<String> excludes) {
