@@ -12,8 +12,6 @@ class BannerExtension {
 
     BannerExtension(Project project) {
         this.project = project
-        this.mcVersion = "1.20.4"
-        this.bukkitVersion = "v1_20_R3"
     }
 
     String getMcVersion() {
