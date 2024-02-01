@@ -53,7 +53,7 @@ class BannerGradlePlugin implements Plugin<Project> {
             remapSpigot.configure { RemapSpigotTask task ->
                 task.ssJar = new File(buildTools, 'BuildData/bin/SpecialSource.jar')
                 task.inJar = new File(buildTools, "Spigot/Spigot-Server/target/spigot-${bannerExt.mcVersion}-R0.1-SNAPSHOT-remapped-mojang.jar")
-                task.outJar = project.file("${project.rootDir}/libs/spigot-${bannerExt.mcVersion}-mapped.jar")
+                task.outJar = project.file("${project.rootDir}/libs/org/spigotmc/spigot-mapped/1.20.4/spigot-mapped-${bannerExt.mcVersion}.jar")
                 task.outDeobf = project.file("${project.buildDir}/banner_cache/spigot-${bannerExt.mcVersion}-mapped-deobf.jar")
                 task.dependsOn(buildSpigot)
                 if (!task.bukkitVersion) {
