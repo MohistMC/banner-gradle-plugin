@@ -25,6 +25,11 @@ class RemapSpigotTask extends DefaultTask {
     private String bukkitVersion
     private File inSrg
     private File inAt
+    private File inApiJar
+    private File outApiJar
+    private File inApiAt
+    private List<String> includesApi
+    private List<String> excludesApi
 
     RemapSpigotTask() {
         includes = new ArrayList<>()
@@ -40,9 +45,15 @@ class RemapSpigotTask extends DefaultTask {
         excludes.add('org/bukkit/craftbukkit/libs/org/eclipse')
         excludes.add('org/bukkit/craftbukkit/libs/jline')
         excludes.add('org/bukkit/craftbukkit/Main')
+        includesApi = new ArrayList<>()
+        includesApi.add("org/bukkit")
+        includesApi.add("org/spigotmc")
+        excludesApi = new ArrayList<>()
+        excludesApi.add('org/bukkit/plugin/java/LibraryLoader')
         File libDir = new File(project.rootDir, "/libs")
         inSrg = new File(libDir, "banner-extra.srg")
         inAt = new File(libDir, "bukkit.at")
+        inApiAt = new File(libDir, "bukkit_api.at")
     }
 
     @TaskAction
@@ -57,6 +68,17 @@ class RemapSpigotTask extends DefaultTask {
         copy(tmp, outJar.toPath(), includes, excludes)
         Files.delete(tmp)
         if (tmpSrg) Files.delete(tmpSrg)
+
+        def tmpApi = Files.createTempFile("banner", "jar")
+        SpecialSource.main(new String[]{
+                '-i', inApiJar.canonicalPath,
+                '-o', tmpApi.toFile().canonicalPath,
+                '-m', inSrg.canonicalPath,
+                '--access-transformer', inApiAt.canonicalPath})
+        Path tmpSrgApi
+        copy(tmpApi, outApiJar.toPath(), includesApi, excludesApi)
+        Files.delete(tmpApi)
+        if (tmpSrgApi) Files.delete(tmpSrgApi)
     }
 
     private static void copy(Path inJar, Path outJar, List<String> includes, List<String> excludes) {
@@ -83,6 +105,15 @@ class RemapSpigotTask extends DefaultTask {
 
     void setInJar(File inJar) {
         this.inJar = inJar
+    }
+
+    @InputFile
+    File getInApiJar() {
+        return inApiJar
+    }
+
+    void setInApiJar(File inJar) {
+        this.inApiJar = inJar
     }
 
     @Input
@@ -119,6 +150,15 @@ class RemapSpigotTask extends DefaultTask {
 
     void setOutJar(File outJar) {
         this.outJar = outJar
+    }
+
+    @OutputFile
+    File getOutApiJar() {
+        return outApiJar
+    }
+
+    void setOutApiJar(File outJar) {
+        this.outApiJar = outJar
     }
 
     @OutputFile

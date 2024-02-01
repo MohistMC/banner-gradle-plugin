@@ -54,6 +54,8 @@ class BannerGradlePlugin implements Plugin<Project> {
                 task.ssJar = new File(buildTools, 'BuildData/bin/SpecialSource.jar')
                 task.inJar = new File(buildTools, "Spigot/Spigot-Server/target/spigot-${bannerExt.mcVersion}-R0.1-SNAPSHOT-remapped-mojang.jar")
                 task.outJar = project.file("libs/spigot-${bannerExt.mcVersion}-mapped.jar")
+                task.inApiJar = new File(buildTools, "Spigot/Spigot-API/target/spigot-api-${bannerExt.mcVersion}-R0.1-SNAPSHOT.jar")
+                task.outApiJar = project.file("libs/spigot-api-${bannerExt.mcVersion}-mapped.jar")
                 task.outDeobf = project.file("libs/spigot-${bannerExt.mcVersion}-mapped-deobf.jar")
                 task.dependsOn(buildSpigot)
                 if (!task.bukkitVersion) {
