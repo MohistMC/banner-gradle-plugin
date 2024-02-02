@@ -50,6 +50,8 @@ class RemapSpigotTask extends DefaultTask {
         includesApi.add("org/spigotmc")
         excludesApi = new ArrayList<>()
         excludesApi.add('org/bukkit/plugin/java/LibraryLoader')
+        excludesApi.add('org/bukkit/event/Event')
+        excludesApi.add('org/bukkit/Material')
         File libDir = new File(project.rootDir, "/libs")
         inSrg = new File(libDir, "banner-extra.srg")
         inAt = new File(libDir, "bukkit.at")
