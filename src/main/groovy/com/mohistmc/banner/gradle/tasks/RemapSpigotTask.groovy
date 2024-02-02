@@ -30,6 +30,7 @@ class RemapSpigotTask extends DefaultTask {
     private File inApiAt
     private List<String> includesApi
     private List<String> excludesApi
+    private String CB_PREFIX = 'org/bukkit/craftbukkit/' + bukkitVersion
 
     RemapSpigotTask() {
         includes = new ArrayList<>()
@@ -45,6 +46,10 @@ class RemapSpigotTask extends DefaultTask {
         excludes.add('org/bukkit/craftbukkit/libs/org/eclipse')
         excludes.add('org/bukkit/craftbukkit/libs/jline')
         excludes.add('org/bukkit/craftbukkit/Main.class')
+        excludes.add(CB_PREFIX + '/inventory/CraftInventoryDoubleChest.class')
+        excludes.add(CB_PREFIX + '/inventory/CraftInventoryLectern.class')
+        excludes.add(CB_PREFIX + '/inventory/CraftInventory.class')
+        excludes.add(CB_PREFIX + '/block/CraftChest.class')
         includesApi = new ArrayList<>()
         includesApi.add("org/bukkit")
         includesApi.add("org/spigotmc")
