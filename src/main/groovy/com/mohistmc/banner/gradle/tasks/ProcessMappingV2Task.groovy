@@ -180,7 +180,7 @@ class ProcessMappingV2Task extends DefaultTask {
         }
 
         var inheritanceMapFile = project.file("${project.buildDir}/banner_cache/tmp_srg/inheritanceMap.txt")
-        var outInheritanceMapFile = project.file("${project.rootDir}/src/main/resources/mappings/inheritanceMap.inheritanceMap")
+        var outInheritanceMapFile = project.file("${project.rootDir}/src/main/resources/mappings/inheritanceMap.txt")
         if (inheritanceMapFile.exists()) {
             copy(inheritanceMapFile.toPath(), outInheritanceMapFile.toPath())
         }
