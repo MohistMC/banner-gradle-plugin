@@ -18,7 +18,7 @@ configurations {
 dependencies {
     implementation gradleApi()
     implementation localGroovy()
-    embed group: 'net.md-5', name: 'SpecialSource', version: '1.11.0'
+    embed 'net.md-5:SpecialSource:1.12.0'
     implementation "org.cadixdev:mercury:0.1.0"
     embed 'org.cadixdev:lorenz-io-proguard:0.5.8'
     embed 'org.cadixdev:lorenz:0.5.8'

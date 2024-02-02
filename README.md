@@ -8,7 +8,7 @@ Code from arclight-gradle-plugin, changed to adapt for Banner development.
 ```groovy
 buildscript {
     repositories {
-        maven { url = 'https://mohistmc.com' }
+        maven { url = 'https://maven.mohistmc.com' }
     }
     dependencies {
         classpath 'com.mohistmc.banner:banner-gradle-plugin:VERSION'
