@@ -51,6 +51,7 @@ class RemapSpigotTask extends DefaultTask {
         excludesApi = new ArrayList<>()
         excludesApi.add('org/bukkit/plugin/java/LibraryLoader')
         excludesApi.add('org/bukkit/plugin/java/PluginClassLoader')
+        excludesApi.add('org/bukkit/plugin/java/JavaPluginLoader')
         excludesApi.add('org/bukkit/event/Event')
         excludesApi.add('org/bukkit/Material')
         File libDir = new File(project.rootDir, "/libs")
