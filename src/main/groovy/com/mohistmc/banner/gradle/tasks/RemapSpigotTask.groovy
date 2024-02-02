@@ -136,6 +136,24 @@ class RemapSpigotTask extends DefaultTask {
         this.excludes = excludes
     }
 
+    @Input
+    List<String> getIncludesApi() {
+        return includesApi
+    }
+
+    void setIncludesApi(List<String> includes) {
+        this.includesApi = includes
+    }
+
+    @Input
+    List<String> getExcludesApi() {
+        return excludesApi
+    }
+
+    void setExcludesApi(List<String> excludes) {
+        this.excludesApi = excludes
+    }
+
     @InputFile
     File getSsJar() {
         return ssJar
