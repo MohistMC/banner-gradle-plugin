@@ -1,5 +1,6 @@
 package com.mohistmc.banner.gradle.tasks
 
+import com.mohistmc.banner.gradle.Utils
 import groovy.json.JsonSlurper
 import net.md_5.specialsource.InheritanceMap
 import net.md_5.specialsource.Jar
@@ -21,6 +22,13 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.*
 import org.objectweb.asm.Type
 
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.StandardCopyOption
+import java.nio.file.StandardOpenOption
+import java.util.jar.JarEntry
+import java.util.jar.JarFile
+import java.util.jar.JarOutputStream
 import java.util.stream.Collectors
 
 class ProcessMappingV2Task extends DefaultTask {
@@ -163,6 +171,27 @@ class ProcessMappingV2Task extends DefaultTask {
                     }
                 }
             }
+        }
+
+        var srgFile = project.file("${project.buildDir}/banner_cache/tmp_srg/bukkit_srg.srg")
+        var outSrgFile = project.file("${project.rootDir}/src/main/resources/mappings/spigot2srg.srg")
+        if (srgFile.exists()) {
+            copy(srgFile.toPath(), outSrgFile.toPath())
+        }
+
+        var inheritanceMapFile = project.file("${project.buildDir}/banner_cache/tmp_srg/inheritanceMap.txt")
+        var outInheritanceMapFile = project.file("${project.rootDir}/src/main/resources/mappings/inheritanceMap.inheritanceMap")
+        if (inheritanceMapFile.exists()) {
+            copy(inheritanceMapFile.toPath(), outInheritanceMapFile.toPath())
+        }
+    }
+
+    private static void copy(Path sourceFile, Path outFile) {
+        try {
+            Files.copy(new FileInputStream(sourceFile.toFile()), outFile, StandardCopyOption.REPLACE_EXISTING)
+            println("Successfully applied moving files!")
+        } catch (IOException e) {
+            println("Error：${e.message}")
         }
     }
 
