@@ -76,10 +76,8 @@ class RemapSpigotTask extends DefaultTask {
                 '-o', tmp.toFile().canonicalPath,
                 '-m', inSrg.canonicalPath,
                 '--access-transformer', inAt.canonicalPath})
-        Path tmpSrg
         copy(tmp, outJar.toPath(), includes, excludes)
         Files.delete(tmp)
-        if (tmpSrg) Files.delete(tmpSrg)
 
         def tmpApi = Files.createTempFile("banner", "jar")
         SpecialSource.main(new String[]{
@@ -87,10 +85,8 @@ class RemapSpigotTask extends DefaultTask {
                 '-o', tmpApi.toFile().canonicalPath,
                 '-m', inSrg.canonicalPath,
                 '--access-transformer', inApiAt.canonicalPath})
-        Path tmpSrgApi
         copy(tmpApi, outApiJar.toPath(), includesApi, excludesApi)
         Files.delete(tmpApi)
-        if (tmpSrgApi) Files.delete(tmpSrgApi)
     }
 
     private static void copy(Path inJar, Path outJar, List<String> includes, List<String> excludes) {
