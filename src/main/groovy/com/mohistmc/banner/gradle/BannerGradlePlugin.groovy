@@ -1,6 +1,6 @@
 package com.mohistmc.banner.gradle
 
-
+import com.mohistmc.banner.gradle.tasks.ProcessMappingV2Task
 import com.mohistmc.banner.gradle.tasks.RemapSpigotTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -48,8 +48,23 @@ class BannerGradlePlugin implements Plugin<Project> {
             }
         }
 
+        def processMapping = project.tasks.create('processMapping', ProcessMappingV2Task)
         def remapSpigot = project.tasks.create('remapSpigotJar', RemapSpigotTask)
         project.afterEvaluate {
+            processMapping.configure { ProcessMappingV2Task task ->
+                var libDir = new File(project.rootDir, "libs")
+                task.buildData = new File(buildTools, 'BuildData')
+                task.mcVersion = bannerExt.mcVersion
+                task.bukkitVersion = bannerExt.bukkitVersion
+                task.outDir = project.file("${project.buildDir}/banner_cache/tmp_srg")
+                task.inMeta = new File(libDir, "version_manifest.json")
+                task.inSrg = new File(libDir, "obf2intermediary.srg")
+                task.inMcp = new File(libDir, "intermediary2yarn.srg")
+                task.inJar = new File(buildTools, "spigot-${bannerExt.mcVersion}.jar")
+                task.inVanillaJar = new File(buildTools, "work/minecraft_server.${task.mcVersion}.jar")
+                task.packageName = bannerExt.packageName
+                task.dependsOn(buildSpigot)
+            }
             remapSpigot.configure { RemapSpigotTask task ->
                 task.ssJar = new File(buildTools, 'BuildData/bin/SpecialSource.jar')
                 task.inJar = new File(buildTools, "Spigot/Spigot-Server/target/spigot-${bannerExt.mcVersion}-R0.1-SNAPSHOT-remapped-mojang.jar")
