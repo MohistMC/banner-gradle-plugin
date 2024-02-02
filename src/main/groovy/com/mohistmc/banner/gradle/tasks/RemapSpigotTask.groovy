@@ -50,6 +50,7 @@ class RemapSpigotTask extends DefaultTask {
         excludes.add(CB_PREFIX + '/inventory/CraftInventoryLectern.class')
         excludes.add(CB_PREFIX + '/inventory/CraftInventory.class')
         excludes.add(CB_PREFIX + '/block/CraftChest.class')
+        excludes.add(CB_PREFIX + '/CraftServer.class')
         includesApi = new ArrayList<>()
         includesApi.add("org/bukkit")
         includesApi.add("org/spigotmc")
