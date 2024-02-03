@@ -84,7 +84,7 @@ class ProcessMappingTask extends DefaultTask {
         srg.methods.entrySet().forEach { Map.Entry<String, String> it ->
             def spl = it.key.split(' ')
             def srgMethod = it.value
-            if (srgMethod.startsWith('method_')) {
+            if (srgMethod.startsWith('method_') || srgMethod.startsWith('comp_')) {
                 def i = spl[0].lastIndexOf('/')
                 def notch = spl[0].substring(i + 1)
                 srgMethodAlias.put(srgMethod, notch + ' ' + spl[1])
@@ -170,7 +170,7 @@ class ProcessMappingTask extends DefaultTask {
                     def csrgDesc = notchToCsrgMapper.mapMethodDesc(desc)
                     def csrgMethod = ProcessMappingTask.findCsrg(prov, csrgCl, notch, csrgDesc, csrg.methods, false)
                     if (csrgMethod == null) {
-                        def extendSearch = !(srgMethod.startsWith('method_'))
+                        def extendSearch = !(srgMethod.startsWith('method_') || srgMethod.startsWith('comp_'))
                         for (def alias : srgMethodAlias.get(extendSearch ? ownerCl + '/' + srgMethod : srgMethod)) {
                             if (alias != (notch + ' ' + desc)) {
                                 def aliasName = alias.split(' ')[0]
