@@ -8,6 +8,7 @@ version '1.0.0'
 
 repositories {
     mavenCentral()
+    maven { url "https://maven.fabricmc.net/" }
 }
 
 configurations {
@@ -22,6 +23,8 @@ dependencies {
     implementation "org.cadixdev:mercury:0.1.0"
     embed 'org.cadixdev:lorenz-io-proguard:0.5.8'
     embed 'org.cadixdev:lorenz:0.5.8'
+    implementation 'net.fabricmc:lorenz-tiny:4.0.2'
+    implementation 'net.fabricmc:fabric-loom:1.5-SNAPSHOT'
 }
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)

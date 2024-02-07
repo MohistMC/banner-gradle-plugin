@@ -1,17 +1,16 @@
 package com.mohistmc.banner.gradle.tasks
 
-import com.mohistmc.banner.gradle.Utils
-import groovy.json.JsonSlurper
+import net.fabricmc.loom.LoomGradleExtension
+import net.fabricmc.lorenztiny.TinyMappingsReader
+import net.fabricmc.mappingio.MappingReader
+import net.fabricmc.mappingio.tree.MemoryMappingTree
 import net.md_5.specialsource.InheritanceMap
 import net.md_5.specialsource.Jar
 import net.md_5.specialsource.provider.JarProvider
-import org.cadixdev.bombe.analysis.CachingInheritanceProvider
-import org.cadixdev.bombe.analysis.ReflectionInheritanceProvider
 import org.cadixdev.bombe.type.MethodDescriptor
 import org.cadixdev.bombe.type.ObjectType
 import org.cadixdev.lorenz.MappingSet
-import org.cadixdev.lorenz.io.proguard.ProGuardReader
-import org.cadixdev.lorenz.io.srg.SrgReader
+import org.cadixdev.lorenz.io.srg.SrgWriter
 import org.cadixdev.lorenz.io.srg.csrg.CSrgReader
 import org.cadixdev.lorenz.io.srg.tsrg.TSrgReader
 import org.cadixdev.lorenz.io.srg.tsrg.TSrgWriter
@@ -25,18 +24,11 @@ import org.objectweb.asm.Type
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
-import java.nio.file.StandardOpenOption
-import java.util.jar.JarEntry
-import java.util.jar.JarFile
-import java.util.jar.JarOutputStream
 import java.util.stream.Collectors
 
 class ProcessMappingV2Task extends DefaultTask {
 
     private File buildData
-    private File inMeta
-    private File inSrg
-    private File inMcp
     private File inJar
     private File inVanillaJar
     private String mcVersion
@@ -46,37 +38,55 @@ class ProcessMappingV2Task extends DefaultTask {
 
     @TaskAction
     void create() {
-        MappingSet csrg = MappingSet.create()
-        def clFile = new File(buildData, "mappings/bukkit-$mcVersion-cl.csrg")
-        clFile.withReader {
-            new CSrgReader(it).read(csrg)
+        def tree = new MemoryMappingTree()
+        MappingReader.read(LoomGradleExtension.get(project).mappingConfiguration.tinyMappings, tree)
+        def official = new TinyMappingsReader(tree, "official", "named").read()
+        def mcp = new TinyMappingsReader(tree, "named", "intermediary").read()
+
+        if (!outDir.isDirectory()) {
+            outDir.mkdirs()
         }
-        def official = MappingSet.create()
-        String url = new JsonSlurper().parse(inMeta).downloads.client_mappings.url
-        new URL(url).withReader {
-            new ProGuardReader(it).read(official)
+        new File(outDir, "srg_to_named.srg").withWriter {
+            new SrgWriter(it) {
+                @Override
+                void write(final MappingSet mappings) {
+                    mappings.getTopLevelClassMappings().stream()
+                            .filter { !it.hasMappings() }
+                            .sorted(this.getConfig().getClassMappingComparator())
+                            .forEach(this::writeClassMapping)
+                    super.write(mappings)
+                }
+
+                @Override
+                protected void writeClassMapping(final ClassMapping<?, ?> mapping) {
+                    if (!mapping.hasDeobfuscatedName()) {
+                        this.writer.println(String.format("CL: %s %s", mapping.getFullObfuscatedName(), mapping.getFullDeobfuscatedName()))
+                    }
+                    super.writeClassMapping(mapping)
+                }
+            }.write(new TinyMappingsReader(tree, "intermediary", "named").read())
         }
-        official = official.reverse()
+        new File(outDir, 'obf_to_intermediary.srg').withWriter {
+            new TSrgWriter(it) {
+                @Override
+                protected void writeFieldMapping(FieldMapping mapping) {
+                    this.writer.println(String.format("\t%s %s",
+                            mapping.getObfuscatedName(),
+                            mapping.getDeobfuscatedName()))
+                }
+            }.write(new TinyMappingsReader(tree, "official", "intermediary").read())
+        }
+
         def srg = MappingSet.create()
-        inSrg.withReader {
+        File srgIntermediary = new File(outDir, "obf_to_intermediary.srg")
+        srgIntermediary.toPath().toFile().withReader {
             def data = it.lines().filter { String s -> !(s.startsWith('\t\t') || s.startsWith('tsrg2')) }.collect(Collectors.joining('\n'))
             new TSrgReader(new StringReader(data.toString())).read(srg)
         }
-        def mcp = MappingSet.create()
-        inMcp.withReader {
-            new SrgReader(it).read(mcp)
-        }
-        mcp = mcp.reverse()
-        def provider = new CachingInheritanceProvider(new ReflectionInheritanceProvider(new URLClassLoader(inVanillaJar.toURI().toURL())))
-        innerClasses(csrg, srg)
-        csrg.topLevelClassMappings.each {
-            it.complete(provider)
-        }
-        srg.topLevelClassMappings.each {
-            it.complete(provider)
-        }
-        if (!outDir.isDirectory()) {
-            outDir.mkdirs()
+        def csrg = MappingSet.create()
+        def clFile = new File(buildData, "mappings/bukkit-$mcVersion-cl.csrg")
+        clFile.withReader {
+            new CSrgReader(it).read(csrg)
         }
         def srgRev = srg.reverse()
         def finalMap = srgRev.merge(csrg).reverse()
@@ -91,7 +101,7 @@ class ProcessMappingV2Task extends DefaultTask {
                     classes.add(it.fullDeobfuscatedName)
                 }
             }
-            im.generate(new JarProvider(Jar.init(inJar)), classes)
+            im.generate(new JarProvider(Jar.init(this.inJar)), classes)
             it.withPrintWriter {
                 for (def className : classes) {
                     def parents = im.getParents(className).collect { finalMap.getOrCreateClassMapping(it).fullDeobfuscatedName }
@@ -222,33 +232,6 @@ class ProcessMappingV2Task extends DefaultTask {
 
     void setBuildData(File buildData) {
         this.buildData = buildData
-    }
-
-    @InputFile
-    File getInMeta() {
-        return inMeta
-    }
-
-    void setInMeta(File inMeta) {
-        this.inMeta = inMeta
-    }
-
-    @InputFile
-    File getInSrg() {
-        return inSrg
-    }
-
-    void setInSrg(File inSrg) {
-        this.inSrg = inSrg
-    }
-
-    @InputFile
-    File getInMcp() {
-        return inMcp
-    }
-
-    void setInMcp(File inMcp) {
-        this.inMcp = inMcp
     }
 
     @InputFile

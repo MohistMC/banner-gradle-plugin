@@ -52,14 +52,10 @@ class BannerGradlePlugin implements Plugin<Project> {
         def remapSpigot = project.tasks.create('remapSpigotJar', RemapSpigotTask)
         project.afterEvaluate {
             processMapping.configure { ProcessMappingV2Task task ->
-                var libDir = new File(project.rootDir, "libs")
                 task.buildData = new File(buildTools, 'BuildData')
                 task.mcVersion = bannerExt.mcVersion
                 task.bukkitVersion = bannerExt.bukkitVersion
                 task.outDir = project.file("${project.buildDir}/banner_cache/tmp_srg")
-                task.inMeta = new File(libDir, "version_manifest.json")
-                task.inSrg = new File(libDir, "obf2intermediary.srg")
-                task.inMcp = new File(libDir, "intermediary2yarn.srg")
                 task.inJar = new File(buildTools, "spigot-${bannerExt.mcVersion}.jar")
                 task.inVanillaJar = new File(buildTools, "work/minecraft_server.${task.mcVersion}.jar")
                 task.packageName = bannerExt.packageName
