@@ -198,6 +198,9 @@ class ProcessMappingV2Task extends DefaultTask {
 
     private static void copy(Path sourceFile, Path outFile) {
         try {
+            if (outFile.toFile().exists()) {
+                outFile.toFile().delete()
+            }
             Files.copy(new FileInputStream(sourceFile.toFile()), outFile, StandardCopyOption.REPLACE_EXISTING)
             println("Successfully applied moving files!")
         } catch (IOException e) {

@@ -64,6 +64,12 @@ class RemapSpigotTask extends DefaultTask {
 
     @TaskAction
     void remap() {
+        if (outJar.exists()) {
+            outJar.delete()
+        }
+        if (outApiJar.exists()) {
+            outApiJar.delete()
+        }
         def tmp = Files.createTempFile("banner", "jar")
         SpecialSource.main(new String[]{
                 '-i', inJar.canonicalPath,
